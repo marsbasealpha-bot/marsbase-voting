@@ -1,0 +1,11 @@
+name = "marsbase-voting"
+pages_build_output_dir = "."
+compatibility_date = "2025-09-01"
+
+# NOTE: Workers AI binding cannot be declared here for Pages projects.
+# Add it in the Cloudflare Dashboard after first deploy:
+#   Workers & Pages → marsbase-voting → Settings → Bindings → Add → Workers AI
+#   Variable name: AI
+#
+# Image search uses Openverse + Wikimedia — completely free, no API key needed.
+

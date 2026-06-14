@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voting Template Creator | MarsBase</title>
+  <meta name="description" content="Create viral 'Must Get Rid of One' social media voting templates. Drag and drop images, auto-fetch from the web, and export as a shareable image." />
+  <meta property="og:title" content="Voting Template Creator | MarsBase" />
+  <meta property="og:description" content="Build stunning social media voting posts in seconds." />
+  <meta property="og:url" content="https://marsbase.win" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══ STARS BACKGROUND ═══ -->
+  <div class="stars" aria-hidden="true">
+    <div class="stars-layer s1"></div>
+    <div class="stars-layer s2"></div>
+    <div class="stars-layer s3"></div>
+  </div>
+
+  <!-- ═══ MAIN APP ═══ -->
+  <div class="app-shell">
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">🚀</span>
+        <span class="brand-name">MarsBase</span>
+        <span class="brand-divider">|</span>
+        <span class="brand-sub">Voting Template Creator</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="btn-clear-all" title="Clear all slots">🗑️ Clear All</button>
+        <button class="btn btn-ghost" id="btn-shuffle" title="Randomise emojis">🔀 Shuffle</button>
+      </div>
+    </header>
+
+    <!-- ── TEMPLATE HEADER EDITOR ── -->
+    <section class="template-header-editor">
+      <div class="editor-row">
+        <label class="editor-label" for="inp-title">Title</label>
+        <input
+          id="inp-title"
+          class="editor-input title-input"
+          type="text"
+          value="Must Get Rid of One ❌"
+          spellcheck="false"
+          maxlength="80"
+        />
+      </div>
+      <div class="editor-row">
+        <label class="editor-label" for="inp-subtitle">Caption</label>
+        <input
+          id="inp-subtitle"
+          class="editor-input subtitle-input"
+          type="text"
+          value="Which one has to go? Cast your vote using the reactions below! 👇"
+          spellcheck="false"
+          maxlength="120"
+        />
+      </div>
+    </section>
+
+    <!-- ── 2×2 GRID ── -->
+    <main class="grid-container" id="grid-container">
+      <!-- Slots injected by app.js -->
+    </main>
+
+    <!-- ── EXPORT PREVIEW HINT ── -->
+    <p class="preview-hint" id="preview-hint" style="display:none">
+      ✅ All 4 slots filled — ready to export!
+    </p>
+
+    <!-- ── ACTION BAR ── -->
+    <footer class="action-bar">
+      <button class="btn btn-secondary" id="btn-copy-text">
+        📋 Copy Caption Text
+      </button>
+      <button class="btn btn-primary" id="btn-export">
+        💾 Export as Image
+      </button>
+    </footer>
+
+    <!-- ── STATUS BAR ── -->
+    <div class="status-bar" id="status-bar">
+      <span id="status-text">Ready — drag images, type labels and press Enter, or click any slot.</span>
+    </div>
+
+  </div><!-- /app-shell -->
+
+  <!-- ═══ EMOJI PICKER MODAL ═══ -->
+  <div class="modal-backdrop" id="emoji-modal" role="dialog" aria-modal="true" aria-label="Choose reaction emoji" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>Choose a reaction</span>
+        <button class="modal-close" id="emoji-modal-close" aria-label="Close">✕</button>
+      </div>
+      <div class="emoji-grid" id="emoji-grid">
+        <!-- Populated by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EXPORT PROGRESS OVERLAY ═══ -->
+  <div class="modal-backdrop" id="export-modal" hidden>
+    <div class="modal-box small">
+      <div class="export-spinner"></div>
+      <p class="export-status-text" id="export-status-text">Compositing image…</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

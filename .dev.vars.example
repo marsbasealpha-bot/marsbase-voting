@@ -1,0 +1,6 @@
+# Local dev — no secrets needed!
+# Image search uses Openverse + Wikimedia (free, no key)
+# Workers AI runs via wrangler pages dev automatically
+
+# If you ever add optional services later, put secrets here:
+# MY_SECRET=value
