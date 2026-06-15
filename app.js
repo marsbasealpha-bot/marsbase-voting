@@ -14,13 +14,14 @@
 'use strict';
 
 /* ── Constants ──────────────────────────────────────── */
-const EMOJIS = ['👍','❤️','😮','😆','😍','🔥','💯','🎉','🥇','🏆','⭐','✅','❌','🚀','💪','👑','🤩','😱','🙌','⚡'];
+/* Facebook's 7 official reactions */
+const EMOJIS = ['👍','❤️','😆','😮','😢','😡','🥰'];
 
 const DEFAULT_CONFIGS = [
   { emoji: '👍', label: 'Option 1' },
   { emoji: '❤️', label: 'Option 2' },
-  { emoji: '😮', label: 'Option 3' },
-  { emoji: '😆', label: 'Option 4' },
+  { emoji: '😆', label: 'Option 3' },
+  { emoji: '😮', label: 'Option 4' },
 ];
 
 /* Export canvas dimensions */
@@ -133,8 +134,8 @@ function buildSlot(index) {
   placeholder.className = 'drop-placeholder';
   placeholder.innerHTML = `
     <span class="drop-icon">📂</span>
-    <div class="drop-title">Drag & drop an image</div>
-    <div class="drop-hint">or click to browse<br/>or type a label below &amp; press Enter</div>
+    <div class="drop-title">Drag &amp; drop an image</div>
+    <div class="drop-hint">or click to browse<br/>or type a name below &amp; press Enter</div>
   `;
 
   /* Image */
@@ -158,7 +159,7 @@ function buildSlot(index) {
 
   dropZone.append(placeholder, img, overlay, statusBadge);
 
-  /* Label bar */
+  /* ── Label bar (doubles as search field) ── */
   const bar = document.createElement('div');
   bar.className = 'slot-label-bar';
 
@@ -171,31 +172,48 @@ function buildSlot(index) {
   const labelInput = document.createElement('input');
   labelInput.type = 'text';
   labelInput.className = 'label-input';
-  labelInput.placeholder = 'Label (press Enter to search image)';
-  labelInput.value = cfg.label;
+  labelInput.placeholder = 'Type a word, press Enter to find image…';
+  labelInput.value = '';
   labelInput.maxLength = 40;
-  labelInput.setAttribute('aria-label', `Label for slot ${index + 1}`);
+  labelInput.setAttribute('aria-label', `Label / image search for slot ${index + 1}`);
 
   bar.append(emojiBtn, labelInput);
   card.append(dropZone, bar);
 
   /* Store refs */
-  state.card       = card;
-  state.dropZone   = dropZone;
-  state.img        = img;
-  state.overlay    = overlay;
-  state.overlayTxt = overlayTxt;
+  state.card        = card;
+  state.dropZone    = dropZone;
+  state.img         = img;
+  state.overlay     = overlay;
+  state.overlayTxt  = overlayTxt;
   state.statusBadge = statusBadge;
-  state.emojiBtn   = emojiBtn;
-  state.labelInput = labelInput;
+  state.emojiBtn    = emojiBtn;
+  state.labelInput  = labelInput;
 
   /* ── Event Wiring ── */
+
+  /* Label input: Enter → search image (if no image) OR just update label (if image present) */
+  labelInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const q = labelInput.value.trim();
+      if (!q) return;
+      state.setLabel(q);
+      if (!state.hasImage()) {
+        fetchImage(state, q);   // no image yet → go find one
+      }
+      // if image already present, just keep the label as typed
+    }
+  });
+  labelInput.addEventListener('change', () => state.setLabel(labelInput.value.trim()));
+  /* Stop label bar clicks from bubbling to drop zone */
+  bar.addEventListener('click', e => e.stopPropagation());
 
   /* Click drop zone → file picker */
   dropZone.addEventListener('click', () => triggerFilePicker(state));
   dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') triggerFilePicker(state); });
 
-  /* Drag & drop */
+  /* Drag & drop on drop zone */
   dropZone.addEventListener('dragenter', e => { e.preventDefault(); card.classList.add('drag-over'); });
   dropZone.addEventListener('dragover',  e => { e.preventDefault(); });
   dropZone.addEventListener('dragleave', e => {
@@ -208,7 +226,7 @@ function buildSlot(index) {
     if (file && file.type.startsWith('image/')) loadFile(state, file);
   });
 
-  /* Also allow drop on the card itself */
+  /* Also allow drop on the whole card */
   card.addEventListener('dragenter', e => { e.preventDefault(); card.classList.add('drag-over'); });
   card.addEventListener('dragover',  e => { e.preventDefault(); });
   card.addEventListener('dragleave', e => {
@@ -225,19 +243,6 @@ function buildSlot(index) {
   emojiBtn.addEventListener('click', e => {
     e.stopPropagation();
     openEmojiModal(state);
-  });
-
-  /* Label input → Enter → search image */
-  labelInput.addEventListener('change', () => state.setLabel(labelInput.value.trim()));
-  labelInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const q = labelInput.value.trim();
-      if (q) {
-        state.setLabel(q);
-        if (!state.hasImage()) fetchImage(state, q);
-      }
-    }
   });
 
   slots.push(state);
@@ -479,7 +484,31 @@ async function exportImage() {
       const bitmapImg = await loadImageElement(state.blobUrl);
       ctx.drawImage(bitmapImg, x, y, cellW, cellH);
 
-      /* Label strip */
+      /* Object name overlay — rendered ON the photo */
+      const defaultLabel = DEFAULT_CONFIGS[i].label;
+      const rawLabel     = state.labelInput.value.trim();
+      const objectName   = (rawLabel && rawLabel !== defaultLabel) ? rawLabel : `Option ${i + 1}`;
+
+      const overlayH = 72;
+      const overlayY = y + cellH - overlayH;
+
+      /* Semi-transparent dark gradient band */
+      const grad = ctx.createLinearGradient(0, overlayY, 0, y + cellH);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.72)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, overlayY, cellW, overlayH);
+
+      /* Object name text on photo */
+      ctx.font = 'bold 26px Inter, Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 6;
+      ctx.fillText(objectName, x + 18, y + cellH - 18);
+      ctx.shadowBlur = 0;
+
+      /* Label strip below image */
       const lyTop = y + cellH;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, lyTop, cellW, labelH);
@@ -490,8 +519,8 @@ async function exportImage() {
       ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH + labelH - 2);
 
       /* Emoji */
-      const emoji    = state.emoji;
-      const label    = state.labelInput.value.trim() || `Option ${i + 1}`;
+      const emoji = state.emoji;
+      const label = rawLabel || `Option ${i + 1}`;
       ctx.font = '36px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
       ctx.textAlign = 'left';
       ctx.fillStyle = '#333333';
@@ -515,14 +544,21 @@ async function exportImage() {
 
     /* ── Download ── */
     statusText.textContent = 'Saving…';
-    canvas.toBlob(blob => {
-      const a  = document.createElement('a');
-      a.href   = URL.createObjectURL(blob);
-      a.download = 'voting-template.jpg';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      setStatus('✅ Image exported successfully!');
-    }, 'image/jpeg', 0.95);
+    await new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (!blob) { reject(new Error('Canvas export produced no data')); return; }
+        const a    = document.createElement('a');
+        const url  = URL.createObjectURL(blob);
+        a.href     = url;
+        a.download = 'voting-template.jpg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus('✅ Image exported! Check your Downloads folder.');
+        resolve();
+      }, 'image/jpeg', 0.95);
+    });
 
   } catch (err) {
     console.error('[export]', err);
