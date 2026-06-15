@@ -459,6 +459,26 @@ body {
 }
 .label-input::placeholder { color: var(--c-text-muted); font-weight: 400; font-size: 0.78rem; }
 
+/* Search button inside label bar */
+.label-search-btn {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--c-accent) 0%, #c0340e 100%);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 5px 9px;
+  transition: var(--transition);
+}
+.label-search-btn:hover {
+  background: linear-gradient(135deg, var(--c-accent-soft) 0%, var(--c-accent) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px var(--c-accent-glow);
+}
+.label-search-btn:active { transform: translateY(0); }
+
 /* ── Preview Hint ─────────────────────────────────────── */
 .preview-hint {
   text-align: center;

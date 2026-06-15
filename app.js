@@ -172,12 +172,19 @@ function buildSlot(index) {
   const labelInput = document.createElement('input');
   labelInput.type = 'text';
   labelInput.className = 'label-input';
-  labelInput.placeholder = 'Type a word, press Enter to find image…';
+  labelInput.placeholder = 'Type a word…';
   labelInput.value = '';
   labelInput.maxLength = 40;
   labelInput.setAttribute('aria-label', `Label / image search for slot ${index + 1}`);
 
-  bar.append(emojiBtn, labelInput);
+  const searchBtn = document.createElement('button');
+  searchBtn.className = 'label-search-btn';
+  searchBtn.type = 'button';
+  searchBtn.textContent = '🔍';
+  searchBtn.title = 'Search for image';
+  searchBtn.setAttribute('aria-label', 'Search image');
+
+  bar.append(emojiBtn, labelInput, searchBtn);
   card.append(dropZone, bar);
 
   /* Store refs */
@@ -189,21 +196,24 @@ function buildSlot(index) {
   state.statusBadge = statusBadge;
   state.emojiBtn    = emojiBtn;
   state.labelInput  = labelInput;
+  state.searchBtn   = searchBtn;
 
   /* ── Event Wiring ── */
 
-  /* Label input: Enter → search image (if no image) OR just update label (if image present) */
+  /* Shared search helper */
+  function runSearch() {
+    const q = labelInput.value.trim();
+    if (!q) return;
+    state.setLabel(q);
+    fetchImage(state, q);
+  }
+
+  /* Search button click */
+  searchBtn.addEventListener('click', e => { e.stopPropagation(); runSearch(); });
+
+  /* Enter key in label input → also triggers search */
   labelInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const q = labelInput.value.trim();
-      if (!q) return;
-      state.setLabel(q);
-      if (!state.hasImage()) {
-        fetchImage(state, q);   // no image yet → go find one
-      }
-      // if image already present, just keep the label as typed
-    }
+    if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
   });
   labelInput.addEventListener('change', () => state.setLabel(labelInput.value.trim()));
   /* Stop label bar clicks from bubbling to drop zone */
