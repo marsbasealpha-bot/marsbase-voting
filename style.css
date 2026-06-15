@@ -418,50 +418,63 @@ body {
 
 /* ── Slot Label Bar ─────────────────────────────────────── */
 .slot-label-bar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 12px;
+  justify-content: center;
+  padding: 8px 44px;   /* side padding reserves space for the abs-positioned 🔍 btn */
   background: var(--c-surface);
   flex-shrink: 0;
+  gap: 0;
+  min-height: 52px;
 }
 
 .emoji-btn {
-  font-size: 1.4rem;
+  font-size: 1.8rem;
   line-height: 1;
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px 6px;
   border-radius: var(--radius-sm);
-  transition: background var(--transition);
+  transition: background var(--transition), transform var(--transition);
   flex-shrink: 0;
+  z-index: 1;
 }
-.emoji-btn:hover { background: rgba(255,255,255,0.08); }
+.emoji-btn:hover { background: rgba(255,255,255,0.08); transform: scale(1.12); }
 
+/* Hidden by default — slides open when bar has .searching */
 .label-input {
-  flex: 1;
+  width: 0;
+  max-width: 0;
+  opacity: 0;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-bottom: 1px solid transparent;
   outline: none;
   color: var(--c-text);
   font-family: var(--font-main);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  padding: 4px 4px 4px 2px;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  padding: 4px 2px;
+  overflow: hidden;
+  transition: max-width 0.25s ease, opacity 0.2s ease, border-color var(--transition);
   min-width: 0;
 }
-.label-input:focus {
+.slot-label-bar.searching .label-input {
+  max-width: 180px;
+  width: auto;
+  opacity: 1;
   border-bottom-color: var(--c-accent);
   box-shadow: 0 2px 0 0 var(--c-accent-glow);
+  margin-left: 8px;
 }
 .label-input::placeholder { color: var(--c-text-muted); font-weight: 400; font-size: 0.78rem; }
 
-/* Search button inside label bar */
+/* 🔍 button — pinned to right edge */
 .label-search-btn {
-  flex-shrink: 0;
+  position: absolute;
+  right: 10px;
   background: linear-gradient(135deg, var(--c-accent) 0%, #c0340e 100%);
   border: none;
   border-radius: var(--radius-sm);

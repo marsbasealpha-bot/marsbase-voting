@@ -159,7 +159,7 @@ function buildSlot(index) {
 
   dropZone.append(placeholder, img, overlay, statusBadge);
 
-  /* ── Label bar (doubles as search field) ── */
+  /* ── Label bar ── */
   const bar = document.createElement('div');
   bar.className = 'slot-label-bar';
 
@@ -169,13 +169,14 @@ function buildSlot(index) {
   emojiBtn.title = 'Change reaction emoji';
   emojiBtn.setAttribute('aria-label', 'Change emoji');
 
+  /* Input is hidden until search button is clicked */
   const labelInput = document.createElement('input');
   labelInput.type = 'text';
   labelInput.className = 'label-input';
-  labelInput.placeholder = 'Type a word…';
+  labelInput.placeholder = 'Search image…';
   labelInput.value = '';
   labelInput.maxLength = 40;
-  labelInput.setAttribute('aria-label', `Label / image search for slot ${index + 1}`);
+  labelInput.setAttribute('aria-label', `Image search for slot ${index + 1}`);
 
   const searchBtn = document.createElement('button');
   searchBtn.className = 'label-search-btn';
@@ -198,24 +199,45 @@ function buildSlot(index) {
   state.labelInput  = labelInput;
   state.searchBtn   = searchBtn;
 
+  /* ── Search expand/collapse helpers ── */
+  function openSearch() {
+    bar.classList.add('searching');
+    labelInput.focus();
+  }
+  function closeSearch() {
+    bar.classList.remove('searching');
+    labelInput.blur();
+  }
+
   /* ── Event Wiring ── */
 
-  /* Shared search helper */
   function runSearch() {
     const q = labelInput.value.trim();
-    if (!q) return;
+    if (!q) { closeSearch(); return; }
     state.setLabel(q);
+    closeSearch();
     fetchImage(state, q);
   }
 
-  /* Search button click */
-  searchBtn.addEventListener('click', e => { e.stopPropagation(); runSearch(); });
-
-  /* Enter key in label input → also triggers search */
-  labelInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
+  /* 🔍 click: if closed → open; if open → run search */
+  searchBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (bar.classList.contains('searching')) {
+      runSearch();
+    } else {
+      openSearch();
+    }
   });
+
+  /* Enter → search; Escape → close */
+  labelInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); runSearch(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+  });
+  /* Blur → close (with small delay so click on searchBtn still fires) */
+  labelInput.addEventListener('blur', () => setTimeout(() => closeSearch(), 150));
   labelInput.addEventListener('change', () => state.setLabel(labelInput.value.trim()));
+
   /* Stop label bar clicks from bubbling to drop zone */
   bar.addEventListener('click', e => e.stopPropagation());
 
