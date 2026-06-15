@@ -499,26 +499,30 @@ async function exportImage() {
       const rawLabel     = state.labelInput.value.trim();
       const objectName   = (rawLabel && rawLabel !== defaultLabel) ? rawLabel : `Option ${i + 1}`;
 
-      const overlayH = 72;
+      const overlayH = 100;
       const overlayY = y + cellH - overlayH;
 
       /* Semi-transparent dark gradient band */
       const grad = ctx.createLinearGradient(0, overlayY, 0, y + cellH);
       grad.addColorStop(0, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, 'rgba(0,0,0,0.72)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.78)');
       ctx.fillStyle = grad;
       ctx.fillRect(x, overlayY, cellW, overlayH);
 
-      /* Object name text on photo */
-      ctx.font = 'bold 26px Inter, Arial, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 6;
-      ctx.fillText(objectName, x + 18, y + cellH - 18);
+      /* Object name — large, black-stroked, white-filled (outlined text), centred */
+      ctx.font = 'bold 48px Inter, Arial, sans-serif';
+      ctx.textAlign = 'center';
       ctx.shadowBlur = 0;
+      // Black outline
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 6;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(objectName, x + cellW / 2, y + cellH - 18);
+      // White fill
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(objectName, x + cellW / 2, y + cellH - 18);
 
-      /* Label strip below image */
+      /* Label strip below image — emoji only, centred */
       const lyTop = y + cellH;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(x, lyTop, cellW, labelH);
@@ -526,20 +530,15 @@ async function exportImage() {
       /* Grid border */
       ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 2;
+      ctx.lineJoin = 'miter';
       ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH + labelH - 2);
 
-      /* Emoji */
+      /* Emoji — centred in strip */
       const emoji = state.emoji;
-      const label = rawLabel || `Option ${i + 1}`;
-      ctx.font = '36px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-      ctx.textAlign = 'left';
+      ctx.font = '42px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#333333';
-      ctx.fillText(emoji, x + 18, lyTop + 52);
-
-      /* Label text */
-      ctx.font = 'bold 28px Inter, Arial, sans-serif';
-      ctx.fillStyle = '#111111';
-      ctx.fillText(label, x + 72, lyTop + 52);
+      ctx.fillText(emoji, x + cellW / 2, lyTop + 54);
     }
 
     /* ── Footer ── */
